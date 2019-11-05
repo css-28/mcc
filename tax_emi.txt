@@ -1,0 +1,192 @@
+1. Code for activity_main.xml.
+<android.support.design.widget.CoordinatorLayout
+ xmlns:android="http://schemas.android.com/apk/res/android"
+ android:layout_width="match_parent"
+ xmlns:tools="http://schemas.android.com/tools"
+ xmlns:app="http://schemas.android.com/apk/res-auto"
+ tools:context="abu.emicalculator.MainActivity"
+ android:layout_height="match_parent">
+ <android.support.v4.widget.NestedScrollView
+ android:layout_width="match_parent"
+ android:layout_height="match_parent"
+ app:layout_behavior="@string/appbar_scrolling_view_behavior">
+ <LinearLayout
+ android:layout_width="fill_parent"
+ android:layout_height="match_parent"
+ android:layout_marginTop="?attr/actionBarSize"
+ android:orientation="vertical"
+ android:paddingLeft="20dp"
+ android:paddingRight="20dp"
+ android:paddingTop="10dp">
+ <android.support.design.widget.TextInputLayout
+ android:id="@+id/input_layout_principal"
+ android:layout_width="match_parent"
+ android:layout_height="wrap_content">
+ <EditText
+ android:id="@+id/principal"
+ android:layout_width="match_parent"
+ android:layout_height="wrap_content"
+ android:singleLine="true"
+ android:inputType="number"
+ android:digits="0123456789."
+ android:hint="@string/hint_principal" />
+ </android.support.design.widget.TextInputLayout>
+ <android.support.design.widget.TextInputLayout
+ android:id="@+id/input_layout_interest"
+ android:layout_width="match_parent"
+ android:layout_height="wrap_content">
+ <EditText
+ android:id="@+id/interest"
+ android:layout_width="match_parent"
+ android:layout_height="wrap_content"
+ android:singleLine="true"
+ android:inputType="number"
+ android:digits="0123456789."
+ android:hint="@string/hint_interest" />
+ </android.support.design.widget.TextInputLayout>
+ <android.support.design.widget.TextInputLayout
+ android:id="@+id/input_layout_tenure"
+ android:layout_width="match_parent"
+ android:layout_height="wrap_content">
+ <EditText 
+ android:id="@+id/years"
+ android:layout_width="match_parent"
+ android:layout_height="wrap_content"
+ android:inputType="number"
+ android:digits="0123456789."
+ android:hint="@string/hint_years" />
+ </android.support.design.widget.TextInputLayout>
+ <Button android:id="@+id/btn_calculate2"
+ android:layout_width="fill_parent"
+ android:layout_height="wrap_content"
+ android:text="Calculate"
+ android:background="@color/colorPrimary"
+ android:layout_marginTop="40dp"
+ android:textColor="@android:color/white"/>
+ <android.support.design.widget.TextInputLayout
+ android:id="@+id/input_layout_emi"
+ android:layout_width="match_parent"
+ android:layout_height="wrap_content"
+ android:layout_marginTop="40dp">
+ <EditText
+ android:id="@+id/emi"
+ android:layout_width="match_parent"
+ android:layout_height="wrap_content"
+ android:maxEms="0"
+ android:inputType="number"
+ android:hint="@string/hint_emi" />
+ </android.support.design.widget.TextInputLayout>
+ <android.support.design.widget.TextInputLayout
+ android:id="@+id/input_layout_total_Interest"
+ android:layout_width="match_parent"
+ android:layout_height="wrap_content"
+ android:layout_marginTop="10dp">
+ <EditText
+ android:id="@+id/interest_total"
+ android:layout_width="match_parent"
+ android:layout_height="wrap_content"
+ android:inputType="number"
+ android:hint="@string/hint_interest_total" />
+ </android.support.design.widget.TextInputLayout>
+ </LinearLayout>
+</android.support.v4.widget.NestedScrollView>
+</android.support.design.widget.CoordinatorLayout>
+2. Go to (gradle scripts ⇒ build.gradle(moduleapp). And, add the below code.
+compile 'com.android.support:appcompat-v7:23.4.0'
+compile 'com.android.support:design:23.1.0'
+3. Go to (App ⇒ Res ⇒values⇒String.xml).
+ <resources>
+ <string name="app_name">EMI Calculator</string>
+ <string name="hint_principal">Principal Amount ₹</string>
+ <string name="hint_interest">Interest rate per Year %</string>
+ <string name="hint_years">How Many Years</string>
+ <string name="hint_emi">EMI ₹</string>
+ <string name="hint_interest_total">Total Interest for Loan ₹</string>
+ </resources>
+4. code for Main Activity.java.
+package abu.emicalculator;
+import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
+import android.text.TextUtils;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
+public class MainActivity extends AppCompatActivity {
+ Button emiCalcBtn;
+ @Override
+ protected void onCreate(Bundle savedInstanceState) {
+ super.onCreate(savedInstanceState);
+ setContentView(R.layout.activity_main);
+ final EditText P = (EditText)findViewById(R.id.principal);
+ final EditText I = (EditText)findViewById(R.id.interest); 
+ final EditText Y = (EditText)findViewById(R.id.years);
+ final EditText TI = (EditText)findViewById(R.id.interest_total);
+ final EditText result = (EditText)findViewById(R.id.emi) ;
+ emiCalcBtn = (Button) findViewById(R.id.btn_calculate2);
+ emiCalcBtn.setOnClickListener(new View.OnClickListener() {
+ @Override
+ public void onClick(View v) {
+ String st1 = P.getText().toString();
+ String st2 = I.getText().toString();
+ String st3 = Y.getText().toString();
+ if (TextUtils.isEmpty(st1)) {
+ P.setError("Enter Prncipal Amount");
+ P.requestFocus();
+ return;
+ }
+ if (TextUtils.isEmpty(st2)) {
+ I.setError("Enter Interest Rate");
+ I.requestFocus();
+ return;
+ }
+ if (TextUtils.isEmpty(st3)) {
+ Y.setError("Enter Years");
+ Y.requestFocus();
+ return;
+ }
+ float p = Float.parseFloat(st1);
+ float i = Float.parseFloat(st2);
+ float y = Float.parseFloat(st3);
+ float Principal = calPric(p);
+ float Rate = calInt(i);
+ float Months = calMonth(y);
+ float Dvdnt = calDvdnt( Rate, Months);
+ float FD = calFinalDvdnt (Principal, Rate, Dvdnt);
+ float D = calDivider(Dvdnt);
+ float emi = calEmi(FD, D);
+ float TA = calTa (emi, Months);
+ float ti = calTotalInt(TA, Principal);
+ result.setText(String.valueOf(emi));
+ TI.setText(String.valueOf(ti));
+ }
+ });
+ }
+ public float calPric(float p) {
+ return (float) (p);
+ }
+ public float calInt(float i) {
+ return (float) (i/12/100);
+ }
+ public float calMonth(float y) {
+ return (float) (y * 12);
+ }
+ public float calDvdnt(float Rate, float Months) { 
+
+ return (float) (Math.pow(1+Rate, Months));
+ }
+ public float calFinalDvdnt(float Principal, float Rate, float Dvdnt) {
+ return (float) (Principal * Rate * Dvdnt);
+ }
+ public float calDivider(float Dvdnt) {
+ return (float) (Dvdnt-1);
+ }
+ public float calEmi(float FD, Float D) {
+ return (float) (FD/D);
+ }
+ public float calTa(float emi, Float Months) {
+ return (float) (emi*Months);
+ }
+ public float calTotalInt(float TA, float Principal) {
+ return (float) (TA - Principal);
+ }
+}
